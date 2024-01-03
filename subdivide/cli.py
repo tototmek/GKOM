@@ -1,7 +1,8 @@
 import argparse
 import os
+import model_io
 
-SUPPORTED_FILE_EXTENSIONS = ["obj"]
+supported_file_extensions = model_io.model_loaders.keys()
 
 
 def parse_arguments():
@@ -11,7 +12,7 @@ def parse_arguments():
     parser.add_argument(
         "model_path",
         type=str,
-        help=f"Path to the 3D model. Supported extensions: {', '.join(SUPPORTED_FILE_EXTENSIONS)}",
+        help=f"Path to the 3D model. Supported extensions: {', '.join(supported_file_extensions)}",
     )
     parser.add_argument(
         "algorithm",
@@ -23,9 +24,9 @@ def parse_arguments():
 
 def validate_args(args):
     file_extension = os.path.splitext(args.model_path)[1][1:].lower()
-    if file_extension not in SUPPORTED_FILE_EXTENSIONS:
+    if file_extension not in supported_file_extensions:
         print(
-            f"Error: Unsupported file extension '{file_extension}'. Supported extensions are: {', '.join(SUPPORTED_FILE_EXTENSIONS)}"
+            f"Error: Unsupported file extension '{file_extension}'. Supported extensions are: {', '.join(supported_file_extensions)}"
         )
         exit(1)
 
