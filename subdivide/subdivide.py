@@ -6,20 +6,13 @@ import model
 import shader
 import environment
 import camera
+import mouse_camera_controller
 
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 import glm
-
-
-def mouse_callback(button, state, x, y):
-    print(f"Mouse button {button} {state} at ({x}, {y})")
-
-
-def motion_callback(x, y):
-    print(f"Mouse position: ({x}, {y})")
 
 
 class Application:
@@ -39,6 +32,11 @@ class Application:
             "assets/shaders/basic.vert", "assets/shaders/wireframe.frag"
         )
         self.model = model.Model(vertices, faces)
+        self.cam = camera.Camera(
+            glm.vec3(-2.0, -8.0, 2.0), glm.vec3(0.0, 0.0, 0.0), glm.vec3(0.0, 0.0, 1.0)
+        )
+        self.camera_controller = mouse_camera_controller.MouseCameraController(self.cam)
+        self.camera_controller.activate()
         glutMainLoop()
 
     def _init_opengl(self):
@@ -48,8 +46,6 @@ class Application:
         glutInitWindowPosition(100, 100)
         glutCreateWindow(os.path.basename(__file__))
         glutDisplayFunc(self._render_frame)
-        glutMouseFunc(mouse_callback)
-        glutMotionFunc(motion_callback)
         glClearColor(0.12, 0.12, 0.12, 1.0)
         glLineWidth(2.0)
         glEnable(GL_DEPTH_TEST)
@@ -57,12 +53,8 @@ class Application:
     def _render_frame(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        cam = camera.Camera(
-            glm.vec3(-2.0, -8.0, 2.0), glm.vec3(0.0, 0.0, 0.0), glm.vec3(0.0, 0.0, 1.0)
-        )
-
         scene = environment.Environment()
-        scene.view_matrix = cam.get_view_matrix()
+        scene.view_matrix = self.cam.get_view_matrix()
         scene.projection_matrix = glm.perspective(
             glm.radians(45.0), 640.0 / 480.0, 0.1, 100.0
         )
@@ -80,8 +72,6 @@ class Application:
             self.model.draw(self.wireframe_shader, scene)
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         glutSwapBuffers()
-
-        print("Rendered")
 
 
 if __name__ == "__main__":
