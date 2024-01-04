@@ -14,6 +14,14 @@ from OpenGL.GLU import *
 import glm
 
 
+def mouse_callback(button, state, x, y):
+    print(f"Mouse button {button} {state} at ({x}, {y})")
+
+
+def motion_callback(x, y):
+    print(f"Mouse position: ({x}, {y})")
+
+
 class Application:
     def run(self):
         args = cli.parse_arguments()
@@ -40,6 +48,8 @@ class Application:
         glutInitWindowPosition(100, 100)
         glutCreateWindow(os.path.basename(__file__))
         glutDisplayFunc(self._render_frame)
+        glutMouseFunc(mouse_callback)
+        glutMotionFunc(motion_callback)
         glClearColor(0.12, 0.12, 0.12, 1.0)
         glLineWidth(2.0)
         glEnable(GL_DEPTH_TEST)
@@ -71,7 +81,7 @@ class Application:
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         glutSwapBuffers()
 
-        print("Dupa")
+        print("Rendered")
 
 
 if __name__ == "__main__":
