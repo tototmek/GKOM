@@ -1,5 +1,6 @@
 import pyassimp
 import os
+import numpy
 
 
 def load_using_assimp(path):
@@ -7,7 +8,9 @@ def load_using_assimp(path):
         if len(scene.meshes) == 0:
             return ([], [])
         mesh = scene.meshes[0]
-        return (mesh.vertices, mesh.faces)
+        vertices = numpy.array(mesh.vertices, dtype=numpy.float32)
+        faces = numpy.array(mesh.faces, dtype=numpy.uint32)
+        return (vertices, faces)
 
 
 model_loaders = {
