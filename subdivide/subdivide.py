@@ -5,6 +5,7 @@ import mesh_io
 import model
 import shader
 import environment
+import camera
 
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -16,6 +17,7 @@ import glm
 class Application:
     def run(self):
         args = cli.parse_arguments()
+        self.render_wireframe = args.wireframe
         print(f"Model: {args.model_path}")
         print(f"Algorithm: {args.algorithm}")
         vertices, faces = mesh_io.load_model(args.model_path)
@@ -29,7 +31,6 @@ class Application:
             "assets/shaders/basic.vert", "assets/shaders/wireframe.frag"
         )
         self.model = model.Model(vertices, faces)
-        self.render_wireframe = args.wireframe
         glutMainLoop()
 
     def _init_opengl(self):
@@ -46,13 +47,12 @@ class Application:
     def _render_frame(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        camera_position = glm.vec3(-2.0, -8.0, 2.0)
-        target_position = glm.vec3(0.0, 0.0, 0.0)
+        cam = camera.Camera(
+            glm.vec3(-2.0, -8.0, 2.0), glm.vec3(0.0, 0.0, 0.0), glm.vec3(0.0, 0.0, 1.0)
+        )
 
         scene = environment.Environment()
-        scene.view_matrix = glm.lookAt(
-            camera_position, target_position, glm.vec3(0.0, 0.0, 1.0)
-        )
+        scene.view_matrix = cam.get_view_matrix()
         scene.projection_matrix = glm.perspective(
             glm.radians(45.0), 640.0 / 480.0, 0.1, 100.0
         )
@@ -70,6 +70,8 @@ class Application:
             self.model.draw(self.wireframe_shader, scene)
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         glutSwapBuffers()
+
+        print("Dupa")
 
 
 if __name__ == "__main__":
