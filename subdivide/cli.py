@@ -19,6 +19,11 @@ def parse_arguments():
         choices=["loop", "catmull-clark"],
         help="Chosen subdivision algorithm",
     )
+    parser.add_argument(
+        "--wireframe",
+        action="store_true",
+        help="Render the model wireframe.",
+    )
     return validate_args(parser.parse_args())
 
 

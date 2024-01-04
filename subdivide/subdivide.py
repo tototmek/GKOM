@@ -22,10 +22,14 @@ class Application:
         print(f"Loaded {vertices.shape[0]} vertices and {faces.shape[0]} faces")
         print("Initialising OpenGL...")
         self._init_opengl()
-        self.shader = shader.Shader(
+        self.object_shader = shader.Shader(
             "assets/shaders/basic.vert", "assets/shaders/basic.frag"
         )
+        self.wireframe_shader = shader.Shader(
+            "assets/shaders/basic.vert", "assets/shaders/wireframe.frag"
+        )
         self.model = model.Model(vertices, faces)
+        self.render_wireframe = args.wireframe
         glutMainLoop()
 
     def _init_opengl(self):
@@ -35,8 +39,8 @@ class Application:
         glutInitWindowPosition(100, 100)
         glutCreateWindow(os.path.basename(__file__))
         glutDisplayFunc(self._render_frame)
-
         glClearColor(0.12, 0.12, 0.12, 1.0)
+        glLineWidth(2.0)
         glEnable(GL_DEPTH_TEST)
 
     def _render_frame(self):
@@ -60,7 +64,11 @@ class Application:
         scene.material_diffuse = glm.vec3(0.1, 0.4, 0.2)
         scene.material_specular = glm.vec3(1.0, 1.0, 1.0)
 
-        self.model.draw(self.shader, scene)
+        self.model.draw(self.object_shader, scene)
+        if self.render_wireframe:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+            self.model.draw(self.wireframe_shader, scene)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         glutSwapBuffers()
 
 
