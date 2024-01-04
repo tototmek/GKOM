@@ -1,5 +1,7 @@
 from OpenGL.GL import *
 import OpenGL.GL.shaders as shaders
+import glm
+import numpy
 
 
 def load_file_as_string(file_path):
@@ -17,9 +19,30 @@ def load_file_as_string(file_path):
 
 class Shader:
     def __init__(self, vertex_shader_path, fragment_shader_path):
-        vertex_source = load_file_as_string(vertex_shader_path)
-        fragment_source = load_file_as_string(fragment_shader_path)
+        vertex = load_file_as_string(vertex_shader_path)
+        fragment = load_file_as_string(fragment_shader_path)
+        self._compile_source(vertex, fragment)
+        self._setup_uniforms()
+
+    def use(self):
+        glUseProgram(self.program)
+
+    def set_uniform_mat4(self, uniform_name, value: glm.mat4):
+        location = self.uniform_locations[uniform_name]
+        glUniformMatrix4fv(location, 1, GL_TRUE, numpy.array(value))
+
+    def _compile_source(self, vertex_source, fragment_source):
         self.program = shaders.compileProgram(
             shaders.compileShader(vertex_source, GL_VERTEX_SHADER),
             shaders.compileShader(fragment_source, GL_FRAGMENT_SHADER),
         )
+
+    def _setup_uniforms(self):
+        self.uniform_types = {}
+        self.uniform_locations = {}
+        uniform_count = glGetProgramiv(self.program, GL_ACTIVE_UNIFORMS)
+        for i in range(uniform_count):
+            uniform_info = glGetActiveUniform(self.program, i)
+            uniform_name = uniform_info[0].decode()
+            uniform_location = glGetUniformLocation(self.program, uniform_name)
+            self.uniform_locations[uniform_name] = uniform_location

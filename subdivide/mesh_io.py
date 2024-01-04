@@ -6,9 +6,20 @@ import numpy
 def load_using_assimp(path):
     with pyassimp.load(path) as scene:
         if len(scene.meshes) == 0:
+            print("Warning: Empty mesh")
             return ([], [])
         mesh = scene.meshes[0]
-        vertices = numpy.array(mesh.vertices, dtype=numpy.float32)
+
+        if len(mesh.texturecoords) < 1:
+            print("Error: Mesh does not contain texture coordinates")
+            exit(1)
+
+        positions = numpy.array(mesh.vertices, dtype=numpy.float32)
+        normals = numpy.array(mesh.normals, dtype=numpy.float32)
+        tex_coords = numpy.array(mesh.texturecoords[0], dtype=numpy.float32)
+        tex_coords = tex_coords[:, :2]
+
+        vertices = numpy.hstack((positions, normals, tex_coords))
         faces = numpy.array(mesh.faces, dtype=numpy.uint32)
         return (vertices, faces)
 

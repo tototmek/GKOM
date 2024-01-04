@@ -9,6 +9,8 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
+import glm
+
 
 class Application:
     def run(self):
@@ -22,7 +24,7 @@ class Application:
         self.shader = shader.Shader(
             "assets/shaders/basic.vert", "assets/shaders/basic.frag"
         )
-        self.model = model.Model(self.shader.program, vertices, faces)
+        self.model = model.Model(vertices, faces)
         glutMainLoop()
 
     def _init_opengl(self):
@@ -38,7 +40,8 @@ class Application:
 
     def _render_frame(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        self.model.draw()
+
+        self.model.draw(self.shader)
         glutSwapBuffers()
 
 
