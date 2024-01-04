@@ -28,8 +28,24 @@ class Shader:
         glUseProgram(self.program)
 
     def set_uniform_mat4(self, uniform_name, value: glm.mat4):
+        if self._is_uniform_unknown(uniform_name):
+            self._warn_unknown_uniform(uniform_name)
+            return
         location = self.uniform_locations[uniform_name]
         glUniformMatrix4fv(location, 1, GL_TRUE, numpy.array(value))
+
+    def set_uniform_vec3(self, uniform_name, value: glm.vec3):
+        if self._is_uniform_unknown(uniform_name):
+            self._warn_unknown_uniform(uniform_name)
+            return
+        location = self.uniform_locations[uniform_name]
+        glUniform3fv(location, 1, glm.value_ptr(value))
+
+    def _is_uniform_unknown(self, uniform_name):
+        return not uniform_name in self.uniform_locations
+
+    def _warn_unknown_uniform(self, uniform_name):
+        print(f'Warning: Setting unknown uniform: "{uniform_name}"')
 
     def _compile_source(self, vertex_source, fragment_source):
         self.program = shaders.compileProgram(

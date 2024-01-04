@@ -4,6 +4,7 @@ import cli
 import mesh_io
 import model
 import shader
+import environment
 
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -41,7 +42,25 @@ class Application:
     def _render_frame(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        self.model.draw(self.shader)
+        camera_position = glm.vec3(-2.0, -8.0, 2.0)
+        target_position = glm.vec3(0.0, 0.0, 0.0)
+
+        scene = environment.Environment()
+        scene.view_matrix = glm.lookAt(
+            camera_position, target_position, glm.vec3(0.0, 0.0, 1.0)
+        )
+        scene.projection_matrix = glm.perspective(
+            glm.radians(45.0), 640.0 / 480.0, 0.1, 100.0
+        )
+        scene.light = environment.Light()
+        scene.light.position = glm.vec3(-5.0, -2.0, 5.0)
+        scene.light.ambient = glm.vec3(0.2, 0.2, 0.2)
+        scene.light.diffuse = glm.vec3(1.0, 1.0, 1.0)
+        scene.light.specular = glm.vec3(1.0, 1.0, 1.0)
+        scene.material_diffuse = glm.vec3(0.1, 0.4, 0.2)
+        scene.material_specular = glm.vec3(1.0, 1.0, 1.0)
+
+        self.model.draw(self.shader, scene)
         glutSwapBuffers()
 
 

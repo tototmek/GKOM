@@ -1,5 +1,6 @@
 from OpenGL.GL import *
 from shader import Shader
+from environment import Environment
 import numpy
 import sys
 import glm
@@ -21,13 +22,28 @@ def initialize_object(vertices: numpy.ndarray, faces: numpy.ndarray):
     glEnableVertexAttribArray(1)
     glEnableVertexAttribArray(2)
     glVertexAttribPointer(
-        0, 3, GL_FLOAT, False, 8 * sizeof(ctypes.c_float), ctypes.c_void_p(0)
+        0,
+        3,
+        GL_FLOAT,
+        False,
+        8 * sizeof(ctypes.c_float),
+        ctypes.c_void_p(0 * sizeof(ctypes.c_float)),
     )
     glVertexAttribPointer(
-        1, 3, GL_FLOAT, False, 8 * sizeof(ctypes.c_float), ctypes.c_void_p(3)
+        1,
+        3,
+        GL_FLOAT,
+        False,
+        8 * sizeof(ctypes.c_float),
+        ctypes.c_void_p(3 * sizeof(ctypes.c_float)),
     )
     glVertexAttribPointer(
-        2, 2, GL_FLOAT, False, 8 * sizeof(ctypes.c_float), ctypes.c_void_p(6)
+        2,
+        2,
+        GL_FLOAT,
+        False,
+        8 * sizeof(ctypes.c_float),
+        ctypes.c_void_p(6 * sizeof(ctypes.c_float)),
     )
     # Unbind everything
     glBindVertexArray(0)
@@ -36,6 +52,7 @@ def initialize_object(vertices: numpy.ndarray, faces: numpy.ndarray):
     glDisableVertexAttribArray(2)
     glBindBuffer(GL_ARRAY_BUFFER, 0)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+
     return vertex_array_object
 
 
@@ -48,15 +65,19 @@ class Model:
         self.vertices = vertices
         self.faces = faces
         self._vertex_array_object = initialize_object(vertices, faces)
+        self.model_matrix = glm.mat4(1.0)
 
-    def draw(self, shader: Shader):
+    def draw(self, shader: Shader, environment: Environment):
         shader.use()
-        model = glm.mat4(1.0)
-        view = glm.translate(glm.mat4(1.0), glm.vec3(-0.4, -0.4, -3))
-        projection = glm.perspective(glm.radians(45.0), 640.0 / 480.0, 0.1, 100.0)
-        shader.set_uniform_mat4("model", model)
-        shader.set_uniform_mat4("view", view)
-        shader.set_uniform_mat4("projection", projection)
+        shader.set_uniform_mat4("model", self.model_matrix)
+        shader.set_uniform_mat4("view", environment.view_matrix)
+        shader.set_uniform_mat4("projection", environment.projection_matrix)
+        shader.set_uniform_vec3("material_diffuse", environment.material_diffuse)
+        shader.set_uniform_vec3("material_specular", environment.material_specular)
+        shader.set_uniform_vec3("light_position", environment.light.position)
+        shader.set_uniform_vec3("light_ambient", environment.light.ambient)
+        shader.set_uniform_vec3("light_diffuse", environment.light.diffuse)
+        shader.set_uniform_vec3("light_specular", environment.light.specular)
 
         glBindVertexArray(self._vertex_array_object)
         glDrawElements(GL_TRIANGLES, self.faces.size, GL_UNSIGNED_INT, None)
