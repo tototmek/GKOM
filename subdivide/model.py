@@ -4,7 +4,9 @@ import numpy
 import sys
 
 
-def initialize_object(shader, vertices: numpy.ndarray, faces: numpy.ndarray):
+def initialize_object(
+    shader_program: shaders.ShaderProgram, vertices: numpy.ndarray, faces: numpy.ndarray
+):
     vertex_array_object = glGenVertexArrays(1)
     glBindVertexArray(vertex_array_object)
     # Create vertex buffer containing vertex data
@@ -16,7 +18,7 @@ def initialize_object(shader, vertices: numpy.ndarray, faces: numpy.ndarray):
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, face_buffer)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sys.getsizeof(faces), faces, GL_STATIC_DRAW)
     # Setup vertex attribute locations
-    position = glGetAttribLocation(shader, "position")
+    position = glGetAttribLocation(shader_program, "position")
     glEnableVertexAttribArray(position)
     glVertexAttribPointer(position, 3, GL_FLOAT, False, 0, ctypes.c_void_p(0))
     # Unbind everything
@@ -29,14 +31,14 @@ def initialize_object(shader, vertices: numpy.ndarray, faces: numpy.ndarray):
 class Model:
     def __init__(
         self,
-        shader: shaders.ShaderProgram,
+        shader_program: shaders.ShaderProgram,
         vertices: numpy.ndarray,
         faces: numpy.ndarray,
     ):
-        self.shader = shader
+        self.shader = shader_program
         self.vertices = vertices
         self.faces = faces
-        self._vertex_array_object = initialize_object(shader, vertices, faces)
+        self._vertex_array_object = initialize_object(shader_program, vertices, faces)
 
     def draw(self):
         glUseProgram(self.shader)
