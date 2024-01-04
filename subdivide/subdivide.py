@@ -1,13 +1,13 @@
 #! /usr/bin/python
 
 import cli
-import model_io
+import mesh_io
+import model
 
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import OpenGL.GL.shaders as shaders
-import numpy
 
 vertex_shader = """
 #version 330
@@ -27,61 +27,16 @@ void main()
 """
 
 
-def initialize_object(shader, vertices: numpy.ndarray, faces: numpy.ndarray):
-    vertex_array_object = glGenVertexArrays(1)
-    glBindVertexArray(vertex_array_object)
-
-    vertex_buffer = glGenBuffers(1)
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer)
-    glBufferData(GL_ARRAY_BUFFER, sys.getsizeof(vertices), vertices, GL_STATIC_DRAW)
-
-    face_buffer = glGenBuffers(1)
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, face_buffer)
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sys.getsizeof(faces), faces, GL_STATIC_DRAW)
-
-    position = glGetAttribLocation(shader, "position")
-    glEnableVertexAttribArray(position)
-    glVertexAttribPointer(position, 3, GL_FLOAT, False, 0, ctypes.c_void_p(0))
-
-    glBindVertexArray(0)
-    glDisableVertexAttribArray(position)
-    glBindBuffer(GL_ARRAY_BUFFER, 0)
-
-    return vertex_array_object
-
-
-class Model:
-    def __init__(
-        self,
-        shader: shaders.ShaderProgram,
-        vertices: numpy.ndarray,
-        faces: numpy.ndarray,
-    ):
-        self.shader = shader
-        self.vertices = vertices
-        self.faces = faces
-        self._vertex_array_object = initialize_object(shader, vertices, faces)
-
-    def draw(self):
-        glUseProgram(self.shader)
-        glBindVertexArray(self._vertex_array_object)
-        glDrawElements(GL_TRIANGLES, self.faces.size, GL_UNSIGNED_INT, None)
-        glBindVertexArray(0)
-        glUseProgram(0)
-
-
 class Application:
     def run(self):
         args = cli.parse_arguments()
         print(f"Model: {args.model_path}")
         print(f"Algorithm: {args.algorithm}")
-        print("Loading model...")
-        vertices, faces = model_io.load_model(args.model_path)
-        print(vertices)
-        print(faces)
+        vertices, faces = mesh_io.load_model(args.model_path)
+        print(f"Loaded {vertices.shape[0]} vertices and {faces.shape[0]} faces")
         print("Initialising OpenGL...")
         self._init_opengl()
-        self.model = Model(self.shader, vertices, faces)
+        self.model = model.Model(self.shader, vertices, faces)
         glutMainLoop()
 
     def _init_opengl(self):

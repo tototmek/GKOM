@@ -1,8 +1,8 @@
 import argparse
 import os
-import model_io
+import mesh_io
 
-supported_file_extensions = model_io.model_loaders.keys()
+supported_file_extensions = mesh_io.model_loaders.keys()
 
 
 def parse_arguments():
