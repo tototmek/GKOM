@@ -10,7 +10,8 @@ class SubdivisionRunner:
         self.meshes[0] = (vertices, faces)
         for level in range(1, max_subdivision_level + 1):
             print(f"Computing subdivision {level}...")
-            self.meshes[level] = self.function(*self.meshes[level - 1])
+            prev_mesh = self.meshes[level - 1]
+            self.meshes[level] = self.function(prev_mesh[0].copy(), prev_mesh[1].copy())
 
     def get_mesh(self, level):
         return self.meshes[level]
