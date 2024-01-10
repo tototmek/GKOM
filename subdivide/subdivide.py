@@ -10,6 +10,7 @@ import mouse_camera_controller
 import loop_subdivision
 import catmull_clark_subdivision
 import subdivision_proxy
+import texture_io
 
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -39,8 +40,18 @@ class Application:
         )
         self.model = self.subdivisions.get_current_model()
         self.object_shader = shader.Shader(
-            "assets/shaders/basic.vert", "assets/shaders/basic.frag"
+            "assets/shaders/basic.vert", "assets/shaders/textured.frag"
         )
+        self.diffuse_texture = texture_io.read_texture(
+            "assets/textures/mossy_cobblestone.png"
+        )
+        self.specular_texture = texture_io.read_texture(
+            "assets/textures/mossy_cobblestone_specular.png"
+        )
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self.diffuse_texture)
+        glActiveTexture(GL_TEXTURE1)
+        glBindTexture(GL_TEXTURE_2D, self.specular_texture)
         self.wireframe_shader = shader.Shader(
             "assets/shaders/basic.vert", "assets/shaders/wireframe.frag"
         )

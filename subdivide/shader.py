@@ -39,6 +39,12 @@ class Shader:
         location = self.uniform_locations[uniform_name]
         glUniform3fv(location, 1, glm.value_ptr(value))
 
+    def set_uniform_int(self, uniform_name, value: int):
+        if self._is_uniform_unknown(uniform_name):
+            return
+        location = self.uniform_locations[uniform_name]
+        glUniform1i(location, value)
+
     def _is_uniform_unknown(self, uniform_name):
         return not uniform_name in self.uniform_locations
 

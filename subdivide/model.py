@@ -72,8 +72,15 @@ class Model:
         shader.set_uniform_mat4("model", self.model_matrix)
         shader.set_uniform_mat4("view", environment.view_matrix)
         shader.set_uniform_mat4("projection", environment.projection_matrix)
-        shader.set_uniform_vec3("material_diffuse", environment.material_diffuse)
-        shader.set_uniform_vec3("material_specular", environment.material_specular)
+
+        # Solid color
+        # shader.set_uniform_vec3("material_diffuse", environment.material_diffuse)
+        # shader.set_uniform_vec3("material_specular", environment.material_specular)
+
+        # Texture
+        shader.set_uniform_int("material_diffuse", 0)
+        shader.set_uniform_int("material_specular", 1)
+
         shader.set_uniform_vec3("light_position", environment.light.position)
         shader.set_uniform_vec3("light_ambient", environment.light.ambient)
         shader.set_uniform_vec3("light_diffuse", environment.light.diffuse)
