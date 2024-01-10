@@ -6,8 +6,10 @@ in vec3 normal;
 in vec2 texCoords;
 in mat4 viewMatrix;
 
-uniform sampler2D material_diffuse;
-uniform sampler2D material_specular;
+uniform sampler2D material_diffuse_texture;
+uniform sampler2D material_specular_texture;
+uniform vec3 material_diffuse_color;
+uniform vec3 material_specular_color;
 
 uniform vec3 light_position;
 uniform vec3 light_ambient;
@@ -16,8 +18,8 @@ uniform vec3 light_specular;
 
 void main()
 {
-   vec3 diffuseColor = vec3(texture(material_diffuse, texCoords));
-   vec3 specularColor = vec3(texture(material_specular, texCoords));
+   vec3 diffuseColor = material_diffuse_color * vec3(texture(material_diffuse_texture, texCoords));
+   vec3 specularColor = material_specular_color * vec3(texture(material_specular_texture, texCoords));
 
    vec3 lightDirection = vec3(viewMatrix * vec4(position - light_position, 0.0f));
 
