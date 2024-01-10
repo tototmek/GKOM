@@ -1,4 +1,7 @@
-def loop_subdivision(vertices, faces):
+import numpy
+
+
+def loop_subdivision(vertices: numpy.ndarray, faces: numpy.ndarray):
     print("Performing Loop subdivision surface")
     for vertex in vertices:
         for i in range(3):
