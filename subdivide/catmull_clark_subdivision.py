@@ -42,11 +42,10 @@ def catmull_clark_subdivision(vertices, cells: np.array):
 
     setting_new_attributes(faces, new_verticies, new_cells)
 
-    return (new_verticies, new_cells)
+    return (np.array(new_verticies), np.array(new_cells))
 
 
 def setting_new_attributes(faces, new_verticies, new_cells):
-    index = 0
 
     def check_if_conatins(array, list):
         for element in list:
@@ -61,21 +60,24 @@ def setting_new_attributes(faces, new_verticies, new_cells):
         return index
 
     # We go through all faces
+    index = -1
 
     for face in faces.values():
         for ind_point in range(len(face['points'])):
             point = face['points'][ind_point]
             len_edges = len(face['edges'])
             a = point['new_point']
-            b = face['edges'][ind_point % len_edges]['edge_point']
+            # b = face['edges'][ind_point % len_edges]['edge_point']
+            b = face['edges'][ind_point]['edge_point']
             c = face['face_point']
-            d = face['edges'][(ind_point + len_edges-1) % len_edges]['edge_point']
+            # d = face['edges'][(ind_point + len_edges-1) % len_edges]['edge_point']
 
             ind_a = get_index(a, index)
-            ind_b = get_index(b, index)
-            ind_c = get_index(c, index)
-            ind_d = get_index(d, index)
-            new_cells.append([ind_a, ind_b, ind_c, ind_d])
+            ind_b = get_index(b, ind_a)
+            ind_c = get_index(c, ind_b)
+            index = ind_c
+            # ind_d = get_index(d, index)
+            new_cells.append([ind_a, ind_b, ind_c])
 
 
 def computing_new_point_coords(vertices, original_points, faces):
@@ -83,24 +85,29 @@ def computing_new_point_coords(vertices, original_points, faces):
         point = original_points[i]
         n = len(point['faces'])
 
-        length = 0
+
         q_value = np.zeros(8)
+        count = 0
         for face in point['faces']:
             q_value += faces[face]['face_point']
-            length = faces[face]['face_point'].shape[0]
+            # length = faces[face]['face_point'].shape[0]
+            count +=1
 
-        q_value = q_value / length
+        q_value = q_value / count
 
         num_of_edges = 0
         r_value = np.zeros(8)
         for edge in point['edges']:
             r_value += edge['mid_point']
-            num_of_edges = edge['mid_point'].shape[0]
+            num_of_edges += 1
 
         r_value = r_value / num_of_edges
 
-        new_point = q_value/num_of_edges + 2 * r_value / num_of_edges + (num_of_edges - 3) * point['point']
+        new_point = calculate_new_coords(point, q_value, num_of_edges, r_value)
         point['new_point'] = new_point
+
+def calculate_new_coords(point, q_value, num_of_edges, r_value):
+    return q_value/num_of_edges + 2 * r_value / num_of_edges + (num_of_edges - 3) * point['point']
 
 
 def computing_mid_end_points(edges):
