@@ -97,7 +97,7 @@ def catmull_clark_subdivision(vertices, cells: np.array):
 
     # Each original point is moved to the position from the ecaution
 
-    for i in range(vertices.shape[1]):
+    for i in range(vertices.shape[0]):
         point = original_points[i]
         n = len(point['faces'])
 
