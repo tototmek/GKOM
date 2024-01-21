@@ -104,8 +104,8 @@ def catmull_clark_subdivision(vertices, cells: np.array):
         length = 0
         q_value = np.zeros(8)
         for face in point['faces']:
-            q_value += face['face_points']
-            length = face['face_points'].shape[1]
+            q_value += faces[face]['face_point']
+            length = faces[face]['face_point'].shape[0]
 
         q_value = q_value / length
 
@@ -113,7 +113,7 @@ def catmull_clark_subdivision(vertices, cells: np.array):
         r_value = np.zeros(8)
         for edge in point['edges']:
             r_value += edge['mid_point']
-            num_of_edges = edge['mid_point'].shape[1]
+            num_of_edges = edge['mid_point'].shape[0]
 
         r_value = r_value / num_of_edges
 
@@ -127,8 +127,8 @@ def catmull_clark_subdivision(vertices, cells: np.array):
     index = 0
     used_points = []
 
-    def get_index(point):
-        if (point not in new_verticies):
+    def get_index(point, index):
+        if (new_verticies.any(point)):
             index += 1
             new_verticies.append(point)
         return index
@@ -144,10 +144,10 @@ def catmull_clark_subdivision(vertices, cells: np.array):
             c = face['face_point']
             d = face['edges'][(ind_point + len_edges-1) % len_edges]['edge_point']
 
-            ind_a = get_index(a)
-            ind_b = get_index(b)
-            ind_c = get_index(c)
-            ind_d = get_index(d)
+            ind_a = get_index(a, index)
+            ind_b = get_index(b, index)
+            ind_c = get_index(c, index)
+            ind_d = get_index(d, index)
             new_cells.append([ind_a, ind_b, ind_c, ind_d])
 
     return (new_verticies, new_cells)
