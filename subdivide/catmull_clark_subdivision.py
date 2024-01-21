@@ -118,7 +118,6 @@ def catmull_clark_subdivision(vertices, cells: np.array):
         r_value = r_value / num_of_edges
 
         new_point = q_value/num_of_edges + 2 * r_value / num_of_edges + (num_of_edges - 3) * point['point']
-
         point['new_point'] = new_point
 
 
@@ -127,8 +126,14 @@ def catmull_clark_subdivision(vertices, cells: np.array):
     index = 0
     used_points = []
 
+    def check_if_conatins(array, list):
+        for element in list:
+            if np.array_equal(element, array):
+                return True
+        return False
+
     def get_index(point, index):
-        if (new_verticies.any(point)):
+        if ( not check_if_conatins(point, new_verticies)):
             index += 1
             new_verticies.append(point)
         return index
