@@ -2,25 +2,26 @@ import numpy as np
 
 def catmull_clark_subdivision(vertices, cells: np.array):
     print("Performing Catmull-Clark subdivision surface")
-
+    print(cells)
     original_points = {}
-    faces = []
+    faces = {}
     edges = {}
+    size = cells.shape[0]
+    for ind_cell in range(cells.shape[0]):
 
-    for ind_cell in range(np.size(cells)):
+        cell_position = tuple(cells[ind_cell])
 
-        cell_position = cells[ind_cell]
-        faces.append({'points': [], 'face_point': None}) # for points and face_points) fejsy się nie powtarzają więc chyba jest git
+        faces[cell_position] = {'face_point': None} # for points and face_points) fejsy się nie powtarzają więc chyba jest git
         face_points = []
 
         for index in cell_position:
-            if index in original_points.keys():
+            if index not in original_points.keys():
                 v = vertices[index]
 
                 point = {
                     'point': v,
                     'faces': [],
-                    'edges': set()
+                    'edges': []
                 }
                 original_points[index] = point # może tu coś się zjebało
             else:
@@ -30,7 +31,7 @@ def catmull_clark_subdivision(vertices, cells: np.array):
             point['faces'].append(cell_position)
             face_points.append(point)
 
-        faces[ind_cell]['points'] = face_points
+        faces[cell_position]['points'] = face_points
 
         ## getting the facepoint
 
@@ -39,7 +40,7 @@ def catmull_clark_subdivision(vertices, cells: np.array):
             vertex = np.array(vertices[index])
             points[i] = vertex
 
-        faces[ind_cell]['face_point'] = np.mean(points)
+        faces[cell_position]['face_point'] = np.mean(points, axis=0)
 
         # mam original_points z moim punktem - dict; faces z jedym zapełnionym facem;
 
@@ -55,7 +56,7 @@ def catmull_clark_subdivision(vertices, cells: np.array):
                 'points': [],
                 'faces': []
             }
-            if edge in edges.keys():
+            if edge not in edges.keys():
                 edge_object['points'].append(original_points[edge[0]])
                 edge_object['points'].append(original_points[edge[1]])
                 edges[edge] = edge_object
@@ -63,36 +64,93 @@ def catmull_clark_subdivision(vertices, cells: np.array):
                 edge_object = edges[edge]
 
             ## every odege should know its adjacent faces
-            edges[edge]['faces'].append(faces[ind_cell])
+            edges[edge]['faces'].append(faces[cell_position])
 
             # ever point should know its adjacent edges
             points_of_the_edge = edges[edge]['points']
-            points_of_the_edge[0]['edges'].add(edge_object)
-            points_of_the_edge[1]['edges'].add(edge_object)
+            points_of_the_edge[0]['edges'].append(edge_object)
+            points_of_the_edge[1]['edges'].append(edge_object)
 
             face_edges.append(edge_object)
 
-        faces[ind_cell]['edges'] = face_edges
+        faces[cell_position]['edges'] = face_edges
 
     # w tej chiwli mam original points z dict-point; faces z edges, points, face-point; edges gdzie edge to lista points i faców
 
 # Compute the edge points and the midpoints of every edge
 
-    for edge in edges:
+    for edge, edge_values in edges.items():
 
         count = 0
-        sum_face_points = np.zeros(3)
-        sum_end_points = np.zeros(3)
+        sum_face_points = np.zeros(8)
+        sum_end_points = np.zeros(8)
 
-        for face in edge['faces']:
+        for face in edge_values['faces']:
             sum_face_points += face['face_point']
 
-        for point in edge['points']:
-            sum_end_points += points['point']
+        for point in edge_values['points']:
+            sum_end_points += point['point']
 
 
-        edge['edge_point'] = (sum_end_points + sum_end_points) / 4 # zadkładam, że 4 jet zawsze 4
-        edge['mid_point'] = sum_end_points / 2
+        edges[edge]['edge_point'] = (sum_end_points + sum_end_points) / 4 # zadkładam, że 4 jet zawsze 4
+        edges[edge]['mid_point'] = sum_end_points / 2
+
+    # Each original point is moved to the position from the ecaution
+
+    for i in range(vertices.shape[1]):
+        point = original_points[i]
+        n = len(point['faces'])
+
+        length = 0
+        q_value = np.zeros(8)
+        for face in point['faces']:
+            q_value += face['face_points']
+            length = face['face_points'].shape[1]
+
+        q_value = q_value / length
+
+        num_of_edges = 0
+        r_value = np.zeros(8)
+        for edge in point['edges']:
+            r_value += edge['mid_point']
+            num_of_edges = edge['mid_point'].shape[1]
+
+        r_value = r_value / num_of_edges
+
+        new_point = q_value/num_of_edges + 2 * r_value / num_of_edges + (num_of_edges - 3) * point['point']
+
+        point['new_point'] = new_point
+
+
+    new_verticies = []
+    new_cells = []
+    index = 0
+    used_points = []
+
+    def get_index(point):
+        if (point not in new_verticies):
+            index += 1
+            new_verticies.append(point)
+        return index
+
+    # We go through all faces
+
+    for face in faces.values():
+        for ind_point in range(len(face['points'])):
+            point = face['points'][ind_point]
+            len_edges = len(face['edges'])
+            a = point['new_point']
+            b = face['edges'][ind_point % len_edges]['edge_point']
+            c = face['face_point']
+            d = face['edges'][(ind_point + len_edges-1) % len_edges]['edge_point']
+
+            ind_a = get_index(a)
+            ind_b = get_index(b)
+            ind_c = get_index(c)
+            ind_d = get_index(d)
+            new_cells.append([ind_a, ind_b, ind_c, ind_d])
+
+    return (new_verticies, new_cells)
 
 
 
