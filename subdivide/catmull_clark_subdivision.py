@@ -1,6 +1,6 @@
 import numpy as np
 
-NUM = 5
+NUM = 3
 
 def catmull_clark_subdivision(vertices, cells: np.array):
     '''
@@ -22,10 +22,12 @@ def catmull_clark_subdivision(vertices, cells: np.array):
 
     '''
     print("Performing Catmull-Clark subdivision surface")
+    
     original_points = {}
     faces = {}
     edges = {}
-    vertices = extract_normals_form_verticies(vertices)
+    # vertices = vertices[:, 0:3]
+    # vertices = extract_normals_form_verticies(vertices)
 
     setting_attributes(vertices, cells, faces, original_points, edges)
 
@@ -45,10 +47,10 @@ def catmull_clark_subdivision(vertices, cells: np.array):
 
     new_verticies = np.array(new_verticies)
 
-    vertices_v, vertices_t = normalize_textures(new_verticies)
+    # vertices_v, vertices_t = normalize_textures(new_verticies)
 
     new_normals = setting_new_normals(vertices_v, new_cells)
-    new_verticies = np.concatenate((vertices_v, new_normals, vertices_t), axis=1)
+    # new_verticies = np.concatenate((vertices_v, new_normals, vertices_t), axis=1)
 
     return (np.array(new_verticies), np.array(new_cells))
 
@@ -81,21 +83,26 @@ def setting_new_normals(vertecies, faces):
     normals /= np.linalg.norm(normals, axis=1)[:, np.newaxis]
     return normals
 
-def setting_new_attributes(faces, new_verticies, new_cells):
+def setting_new_attributes(faces, new_verticies: list, new_cells: list):
 
-    def check_if_conatins(array, list):
-        for element in list:
+    def position_in_array(array, list):
+        for i, element in enumerate(list):
             if np.array_equal(element, array):
-                return True
-        return False
+                return i
+        return -1
 
     def get_index(point, index):
-        if ( not check_if_conatins(point, new_verticies)):
-            index += 1
+        index = 0
+        position = position_in_array(point, new_verticies)
+        if ( position == -1):
+            # index += 1
+            index = len(new_verticies)
             new_verticies.append(point)
+        else:
+            index = position
         return index
 
-    # We go through all faces
+    # We go through all the faces
     index = -1
 
     for face in faces.values():
@@ -104,16 +111,17 @@ def setting_new_attributes(faces, new_verticies, new_cells):
             len_edges = len(face['edges'])
             a = point['new_point']
             # b = face['edges'][ind_point % len_edges]['edge_point']
-            b = face['edges'][ind_point]['edge_point']
+            b = face['edges'][(ind_point)%len_edges]['edge_point']
             c = face['face_point']
-            # d = face['edges'][(ind_point + len_edges-1) % len_edges]['edge_point']
+            d = face['edges'][(ind_point + len_edges-1) % len_edges]['edge_point']
 
             ind_a = get_index(a, index)
             ind_b = get_index(b, ind_a)
             ind_c = get_index(c, ind_b)
-            index = ind_c
+            ind_d = get_index(d, ind_c)
+            index = ind_d
             # ind_d = get_index(d, index)
-            new_cells.append([ind_a, ind_b, ind_c])
+            new_cells.append([ind_a, ind_b, ind_c, ind_d])
 
 
 def computing_new_point_coords(vertices, original_points, faces):
@@ -139,7 +147,7 @@ def computing_new_point_coords(vertices, original_points, faces):
 
         r_value = r_value / num_of_edges
 
-        new_point = calculate_new_coords(point, q_value, num_of_edges, r_value)
+        new_point = calculate_new_coords(point, q_value, count, r_value)
         point['new_point'] = new_point
 
 def calculate_new_coords(point, q_value, num_of_edges, r_value):
@@ -158,8 +166,8 @@ def computing_mid_end_points(edges):
         for point in edge_values['points']:
             sum_end_points += point['point']
 
-
-        edges[edge]['edge_point'] = (sum_end_points + sum_end_points) / 4 # zadkładam, że 4 jet zawsze 4
+        edge_sum = (sum_face_points + sum_end_points)
+        edges[edge]['edge_point'] =  edge_sum / 4 # zadkładam, że 4 jet zawsze 4
         edges[edge]['mid_point'] = sum_end_points / 2
 
 
@@ -198,16 +206,17 @@ def setting_edges(faces, original_points, edges, cell_position):
             edge_object['points'].append(original_points[edge[0]])
             edge_object['points'].append(original_points[edge[1]])
             edges[edge] = edge_object
+             # ever point should know its adjacent edges
+            points_of_the_edge = edges[edge]['points']
+            points_of_the_edge[0]['edges'].append(edge_object)
+            points_of_the_edge[1]['edges'].append(edge_object)
         else:
             edge_object = edges[edge]
 
             ## every edege should know its adjacent faces
         edges[edge]['faces'].append(faces[cell_position])
 
-            # ever point should know its adjacent edges
-        points_of_the_edge = edges[edge]['points']
-        points_of_the_edge[0]['edges'].append(edge_object)
-        points_of_the_edge[1]['edges'].append(edge_object)
+           
 
         face_edges.append(edge_object)
 
@@ -215,7 +224,7 @@ def setting_edges(faces, original_points, edges, cell_position):
 
 
 def setting_face_point(vertices, faces, cell_position):
-    points = np.empty((np.size(cell_position), NUM))
+    points = np.zeros((np.size(cell_position), NUM))
     for i, index in enumerate(cell_position):
         vertex = np.array(vertices[index])
         points[i] = vertex
