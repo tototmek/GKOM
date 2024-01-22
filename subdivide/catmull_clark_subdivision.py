@@ -1,3 +1,4 @@
+
 import numpy as np
 
 NUM = 5
@@ -21,6 +22,11 @@ def catmull_clark_subdivision(vertices, cells: np.array):
                                         'edges': [edges] }}
 
     '''
+
+
+
+def catmull_clark_subdivision(vertices: numpy.ndarray, faces: numpy.ndarray):
+
     print("Performing Catmull-Clark subdivision surface")
     original_points = {}
     faces = {}
