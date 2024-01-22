@@ -55,7 +55,7 @@ def load_using_assimp(path):
 
 
 model_loaders = {
-    "obj": load_using_wave,
+    "obj": load_using_assimp,
     "stl": load_using_assimp,
     "ply": load_using_assimp,
 }
