@@ -25,12 +25,8 @@ def catmull_clark_subdivision(vertices, cells: np.array):
     original_points = {}
     faces = {}
     edges = {}
-    vertices_v = vertices[:, 0:3]
-    vertices_n = vertices[:, 3:6]
-    vertices_t = vertices[:, 6:8]
-    vertices = np.concatenate((vertices_v, vertices_t), axis=1)
-    # verticies_rest = vertices[:, 3:]
-    # vertices = vertices[:, 0:3]
+    vertices = extract_normals_form_verticies(vertices)
+
     setting_attributes(vertices, cells, faces, original_points, edges)
 
 
@@ -49,14 +45,25 @@ def catmull_clark_subdivision(vertices, cells: np.array):
 
     new_verticies = np.array(new_verticies)
 
-    vertices_v = new_verticies[:, 0:3]
-    vertices_t = new_verticies[:, 3:6]
-    vertices_t /= np.linalg.norm(vertices_t, axis=1)[:, np.newaxis]
+    vertices_v, vertices_t = normalize_textures(new_verticies)
 
     new_normals = setting_new_normals(vertices_v, new_cells)
     new_verticies = np.concatenate((vertices_v, new_normals, vertices_t), axis=1)
 
     return (np.array(new_verticies), np.array(new_cells))
+
+def normalize_textures(new_verticies):
+    vertices_v = new_verticies[:, 0:3]
+    vertices_t = new_verticies[:, 3:6]
+    vertices_t /= np.linalg.norm(vertices_t, axis=1)[:, np.newaxis]
+    return vertices_v,vertices_t
+
+def extract_normals_form_verticies(vertices):
+    vertices_v = vertices[:, 0:3]
+    vertices_n = vertices[:, 3:6]
+    vertices_t = vertices[:, 6:8]
+    vertices = np.concatenate((vertices_v, vertices_t), axis=1)
+    return vertices
 
 def setting_new_normals(vertecies, faces):
     normals = np.zeros((len(vertecies), 3))
