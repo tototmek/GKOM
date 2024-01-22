@@ -1,4 +1,5 @@
 import model
+import copy
 
 
 class SubdivisionRunner:
@@ -11,7 +12,7 @@ class SubdivisionRunner:
         for level in range(1, max_subdivision_level + 1):
             print(f"Computing subdivision {level}...")
             prev_mesh = self.meshes[level - 1]
-            self.meshes[level] = self.function(prev_mesh[0].copy(), prev_mesh[1].copy())
+            self.meshes[level] = self.function(copy.deepcopy(prev_mesh[0]), copy.deepcopy(prev_mesh[1]))
 
     def get_mesh(self, level):
         return self.meshes[level]

@@ -1,5 +1,6 @@
 import numpy as np
 
+NUM = 5
 
 def catmull_clark_subdivision(vertices, cells: np.array):
     '''
@@ -24,12 +25,16 @@ def catmull_clark_subdivision(vertices, cells: np.array):
     original_points = {}
     faces = {}
     edges = {}
-
+    vertices_v = vertices[:, 0:3]
+    vertices_n = vertices[:, 3:6]
+    vertices_t = vertices[:, 6:8]
+    vertices = np.concatenate((vertices_v, vertices_t), axis=1)
+    # verticies_rest = vertices[:, 3:]
+    # vertices = vertices[:, 0:3]
     setting_attributes(vertices, cells, faces, original_points, edges)
 
-    # w tej chiwli mam original points z dict-point; faces z edges, points, face-point; edges gdzie edge to lista points i faców
 
-# Compute the edge points and the midpoints of every edge
+    # Compute the edge points and the midpoints of every edge
 
     computing_mid_end_points(edges)
 
@@ -42,8 +47,32 @@ def catmull_clark_subdivision(vertices, cells: np.array):
 
     setting_new_attributes(faces, new_verticies, new_cells)
 
+    new_verticies = np.array(new_verticies)
+
+    vertices_v = new_verticies[:, 0:3]
+    vertices_t = new_verticies[:, 3:6]
+    vertices_t /= np.linalg.norm(vertices_t, axis=1)[:, np.newaxis]
+
+    new_normals = setting_new_normals(vertices_v, new_cells)
+    new_verticies = np.concatenate((vertices_v, new_normals, vertices_t), axis=1)
+
     return (np.array(new_verticies), np.array(new_cells))
 
+def setting_new_normals(vertecies, faces):
+    normals = np.zeros((len(vertecies), 3))
+
+    for face in faces:
+        v0 = vertecies[face[0]]
+        v1 = vertecies[face[1]]
+        v2 = vertecies[face[2]]
+
+        normal = np.cross(v1 - v0, v2 - v0)
+
+        for index in face:
+            normals[index] += normal
+
+    normals /= np.linalg.norm(normals, axis=1)[:, np.newaxis]
+    return normals
 
 def setting_new_attributes(faces, new_verticies, new_cells):
 
@@ -86,7 +115,7 @@ def computing_new_point_coords(vertices, original_points, faces):
         n = len(point['faces'])
 
 
-        q_value = np.zeros(8)
+        q_value = np.zeros(NUM)
         count = 0
         for face in point['faces']:
             q_value += faces[face]['face_point']
@@ -96,7 +125,7 @@ def computing_new_point_coords(vertices, original_points, faces):
         q_value = q_value / count
 
         num_of_edges = 0
-        r_value = np.zeros(8)
+        r_value = np.zeros(NUM)
         for edge in point['edges']:
             r_value += edge['mid_point']
             num_of_edges += 1
@@ -113,8 +142,8 @@ def calculate_new_coords(point, q_value, num_of_edges, r_value):
 def computing_mid_end_points(edges):
     for edge, edge_values in edges.items():
         count = 0
-        sum_face_points = np.zeros(8)
-        sum_end_points = np.zeros(8)
+        sum_face_points = np.zeros(NUM)
+        sum_end_points = np.zeros(NUM)
 
         for face in edge_values['faces']:
             sum_face_points += face['face_point']
@@ -179,7 +208,7 @@ def setting_edges(faces, original_points, edges, cell_position):
 
 
 def setting_face_point(vertices, faces, cell_position):
-    points = np.empty((np.size(cell_position), 8))
+    points = np.empty((np.size(cell_position), NUM))
     for i, index in enumerate(cell_position):
         vertex = np.array(vertices[index])
         points[i] = vertex
@@ -209,43 +238,3 @@ def setting_points(vertices, cell_position, original_points, faces):
 
 
     faces[cell_position]['points'] = face_points
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#     face_points = []
-
-#     for face in faces:
-#         points = np.empty((np.size(face), 8))
-#         for i, index in enumerate(face):
-#             vertex = np.array(vertices[index])
-#             points[i] = vertex
-#         face_points.append(np.mean(points))
-
-#     print(faces)
-#     print('\n')
-#     print(face_points)
-#     print('\n')
-#     print([list(row[:3]) for row in vertices])
-
-#     edge_points = []
-#     get_neighbour(faces, face_points, vertices)
-#     return (vertices, faces)
-
-# def get_neighbour(faces, face_points, vertices):
-#     size = np.size(faces[0])
-#     edges = [[(vertices[face[i]], vertices[face[i+1]]) for i in range(-1, np.size(faces[0])-1)] for face in faces]
-#     pass
-
-
