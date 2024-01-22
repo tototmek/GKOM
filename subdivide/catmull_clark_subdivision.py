@@ -49,7 +49,7 @@ def catmull_clark_subdivision(vertices, cells: np.array):
 
     # vertices_v, vertices_t = normalize_textures(new_verticies)
 
-    new_normals = setting_new_normals(vertices_v, new_cells)
+    # new_normals = setting_new_normals(vertices_v, new_cells)
     # new_verticies = np.concatenate((vertices_v, new_normals, vertices_t), axis=1)
 
     return (np.array(new_verticies), np.array(new_cells))
@@ -159,15 +159,17 @@ def computing_mid_end_points(edges):
         count = 0
         sum_face_points = np.zeros(NUM)
         sum_end_points = np.zeros(NUM)
-
+        number_of_points = 0
         for face in edge_values['faces']:
             sum_face_points += face['face_point']
+            number_of_points += 1
 
         for point in edge_values['points']:
             sum_end_points += point['point']
+            number_of_points += 1
 
         edge_sum = (sum_face_points + sum_end_points)
-        edges[edge]['edge_point'] =  edge_sum / 4 # zadkładam, że 4 jet zawsze 4
+        edges[edge]['edge_point'] =  edge_sum / number_of_points # zadkładam, że 4 jet zawsze 4
         edges[edge]['mid_point'] = sum_end_points / 2
 
 
