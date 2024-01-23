@@ -37,7 +37,7 @@ class Application:
             else catmull_clark_subdivision.catmull_clark_subdivision
         )
         self.subdivisions = subdivision_proxy.SubdivisionProxy(
-            algorithm_function, vertices, faces, 4
+            algorithm_function, vertices, faces, 1
         )
         self.model = self.subdivisions.get_current_model()
         self._load_assets(args)

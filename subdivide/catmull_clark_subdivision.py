@@ -2,6 +2,7 @@ import numpy as np
 
 NUM = 3
 
+
 def catmull_clark_subdivision(vertices, cells: np.array):
     '''
     dict structres used:
@@ -52,6 +53,7 @@ def catmull_clark_subdivision(vertices, cells: np.array):
     # new_normals = setting_new_normals(vertices_v, new_cells)
     # new_verticies = np.concatenate((vertices_v, new_normals, vertices_t), axis=1)
 
+    
     return (np.array(new_verticies), np.array(new_cells))
 
 def normalize_textures(new_verticies):

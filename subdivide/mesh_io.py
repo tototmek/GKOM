@@ -60,13 +60,15 @@ def load_using_assimp(path):
         tex_coords = numpy.array(mesh.texturecoords[0], dtype=numpy.float32)
         tex_coords = tex_coords[:, :2]
         # normals = numpy.full((positions.shape[0], 3), 0.5)
-        vertices = numpy.hstack((positions, normals, tex_coords))
+        # vertices = numpy.hstack((positions, normals, tex_coords))
+        duplicated_vertices = [mesh.vertices]
         faces = numpy.array(mesh.faces, dtype=numpy.uint32)
-        return (vertices, faces)
+        vertices, faces = get_proper_faces(positions, faces)
+        return (numpy.array(vertices), numpy.array(faces))
 
 
 model_loaders = {
-    "obj": load_using_wave,
+    "obj": load_using_assimp,
     "stl": load_using_assimp,
     "ply": load_using_assimp,
 }

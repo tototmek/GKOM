@@ -1,5 +1,6 @@
 import model
 import copy
+import prepare_scene
 
 
 class SubdivisionRunner:
@@ -12,8 +13,9 @@ class SubdivisionRunner:
         for level in range(1, max_subdivision_level + 1):
             print(f"Computing subdivision {level}...")
             prev_mesh = self.meshes[level - 1]
-            self.meshes[level] = self.function(copy.deepcopy(prev_mesh[0]), copy.deepcopy(prev_mesh[1]))
-
+            vertices, faces = self.function(copy.deepcopy(prev_mesh[0]), copy.deepcopy(prev_mesh[1]))
+            self.meshes[level] = prepare_scene.load_normals_and_textures(vertices, faces)
+            # TODO IT WON'T WORK FOR FEW LEVELS
     def get_mesh(self, level):
         return self.meshes[level]
 
