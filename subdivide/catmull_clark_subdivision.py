@@ -26,7 +26,7 @@ def catmull_clark_subdivision(vertices, cells: np.array):
     original_points = {}
     faces = {}
     edges = {}
-    # vertices = vertices[:, 0:3]
+    vertices = vertices[:, 0:3]
     # vertices = extract_normals_form_verticies(vertices)
 
     setting_attributes(vertices, cells, faces, original_points, edges)
@@ -51,6 +51,11 @@ def catmull_clark_subdivision(vertices, cells: np.array):
 
     # new_normals = setting_new_normals(vertices_v, new_cells)
     # new_verticies = np.concatenate((vertices_v, new_normals, vertices_t), axis=1)
+    
+    normals = [[1,0,0] for i in range(new_verticies.shape[0])]
+    textures = np.zeros((new_verticies.shape[0], 2))
+    new_verticies = np.hstack((new_verticies, normals, textures))
+
 
     return (np.array(new_verticies), np.array(new_cells))
 
